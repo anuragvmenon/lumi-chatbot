@@ -28,7 +28,7 @@ services:
     name: lumi-web
     env: python
     plan: free
-    buildCommand: "pip install --no-cache-dir django python-dotenv gunicorn whitenoise requests pandas google-generativeai && cd lumi_web && python manage.py collectstatic --noinput"
+    buildCommand: "pip install --no-cache-dir django python-dotenv gunicorn whitenoise requests pandas google-generativeai rasa-sdk && cd lumi_web && python manage.py collectstatic --noinput"
     startCommand: "cd lumi_web && gunicorn lumi_web.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
