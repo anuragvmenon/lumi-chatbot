@@ -6,6 +6,9 @@ services:
     plan: free
     buildCommand: "pip install --no-cache-dir -r requirements.txt"
     startCommand: "rasa run actions --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.9.17"
 
   # 2. Rasa Core Server
   - type: web
@@ -17,6 +20,8 @@ services:
     envVars:
       - key: ACTION_ENDPOINT
         value: https://lumi-actions.onrender.com/webhook
+      - key: PYTHON_VERSION
+        value: "3.9.17"
 
   # 3. Django Web Interface
   - type: web
@@ -25,3 +30,6 @@ services:
     plan: free
     buildCommand: "pip install --no-cache-dir -r requirements.txt && pip install --no-cache-dir gunicorn whitenoise && cd lumi_web && python manage.py collectstatic --noinput"
     startCommand: "cd lumi_web && gunicorn lumi_web.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.9.17"
