@@ -4,7 +4,7 @@ services:
     name: lumi-actions
     env: python
     plan: free
-    buildCommand: "pip install uv && uv pip install --system --no-cache rasa-sdk google-generativeai pandas python-dotenv"
+    buildCommand: "pip install uv && python -m uv pip install --system --no-cache rasa-sdk google-generativeai pandas python-dotenv"
     startCommand: "python -m rasa_sdk --actions actions --port $PORT"
     envVars:
       - key: PYTHON_VERSION
@@ -15,7 +15,7 @@ services:
     name: lumi-rasa
     env: python
     plan: free
-    buildCommand: "pip install uv && uv pip install --system --no-cache rasa spacy && python -m spacy download en_core_web_sm"
+    buildCommand: "pip install uv && python -m uv pip install --system --no-cache rasa spacy && python -m spacy download en_core_web_sm"
     startCommand: "rasa run --enable-api --cors \"*\" --port $PORT"
     envVars:
       - key: ACTION_ENDPOINT
@@ -28,7 +28,7 @@ services:
     name: lumi-web
     env: python
     plan: free
-    buildCommand: "pip install uv && uv pip install --system --no-cache django python-dotenv gunicorn whitenoise && cd lumi_web && python manage.py collectstatic --noinput"
+    buildCommand: "pip install uv && python -m uv pip install --system --no-cache django python-dotenv gunicorn whitenoise requests && cd lumi_web && python manage.py collectstatic --noinput"
     startCommand: "cd lumi_web && gunicorn lumi_web.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
