@@ -1,7 +1,7 @@
 django
 rasa
 rasa-sdk
-openai
+google-generativeai
 spacy
 python-dotenv
 faiss-cpu

@@ -13,7 +13,7 @@ from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.forms import FormAction
 from database_conn import GetData
-import openai
+import google.generativeai as genai
 import os
 
 
@@ -92,26 +92,24 @@ class ActionDefaultAskQuestion(Action):
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         # Get the API key from environment variables
-        api_key = os.environ.get("OPENAI_API_KEY")
+        api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             dispatcher.utter_message(text="I'm sorry, but I'm not configured to answer questions right now. The API key is missing.")
             return []
 
-        openai.api_key = api_key
+        genai.configure(api_key=api_key)
         user_question = tracker.latest_message.get('text')
         
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are Lumi, a calm, compassionate, caring, and pampering mental health assistant with a retro pixel pet tamagotchi vibe. Your role is to provide helpful, safe, understanding, and cozy information. Do not give medical advice, but you can provide general knowledge and supportive guidance. If a user seems to be in crisis, gently suggest they contact a crisis hotline or mental health professional."},
-                    {"role": "user", "content": user_question}
-                ]
+            model = genai.GenerativeModel(
+                'gemini-1.5-flash',
+                system_instruction="You are Lumi, a calm, compassionate, caring, and pampering mental health assistant with a retro pixel pet tamagotchi vibe. Your role is to provide helpful, safe, understanding, and cozy information. Do not give medical advice, but you can provide general knowledge and supportive guidance. If a user seems to be in crisis, gently suggest they contact a crisis hotline or mental health professional."
             )
-            answer = response.choices[0].message.content
+            response = model.generate_content(user_question)
+            answer = response.text
             dispatcher.utter_message(text=answer)
         except Exception as e:
-            print(f"Error calling OpenAI API: {e}")
+            print(f"Error calling Gemini API: {e}")
             dispatcher.utter_message(text="I'm sorry, I encountered a problem while trying to find an answer for you. Please try again later.")
 
         return []

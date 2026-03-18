@@ -28,7 +28,7 @@ DEBUG = True
 # API Keys
 # Note: It is highly recommended to use environment variables for API keys in production
 import os
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyAz9olQs5_sKlPmHK4bqmTUTSxyQ01XumM')
 SERPAPI_API_KEY = os.environ.get('SERPAPI_API_KEY', '6cfcf400b9f8c0b0fa8b18a76f9fad67e9b908697d1978367571af2b1d494ce5')
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
