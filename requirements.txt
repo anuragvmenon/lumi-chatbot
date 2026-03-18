@@ -1,0 +1,11 @@
+django
+rasa
+rasa-sdk
+openai
+spacy
+python-dotenv
+faiss-cpu
+sentence-transformers
+pandas
+kaggle
+en_core_web_md

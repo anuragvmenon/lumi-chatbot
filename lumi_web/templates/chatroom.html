@@ -1,0 +1,346 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <title>Chat</title>
+    <meta charset="utf-8" />
+    <link href="{% static 'img/chatbot.png' %}" rel="icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://npm-scalableminds.s3.eu-central-1.amazonaws.com/@scalableminds/chatroom@master/dist/Chatroom.css" />
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <style>
+        /* --------------------------chatbox---------------------------------- */
+        /* .chatroom {
+            background-color: white;
+        } */
+        
+        .chatroom .input {
+            border-color: #a855f7;
+            background-color: #1a1a2e;
+        }
+        
+        body {
+            background-color: #0f0f1b;
+            color: #e2e8f0;
+            margin: 0;
+            min-height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+        
+        /* CRT Scanline Effect */
+        body::after {
+            content: "";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.15));
+            background-size: 100% 4px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.8;
+            animation: crt-flicker 0.15s infinite;
+        }
+        
+        @keyframes crt-flicker {
+            0% { opacity: 0.8; }
+            10% { opacity: 0.75; }
+            20% { opacity: 0.82; }
+            30% { opacity: 0.78; }
+            40% { opacity: 0.85; }
+            50% { opacity: 0.75; }
+            60% { opacity: 0.82; }
+            70% { opacity: 0.78; }
+            80% { opacity: 0.85; }
+            90% { opacity: 0.75; }
+            100% { opacity: 0.8; }
+        }
+        
+        * {
+            font-family: "Courier New", Courier, monospace;
+            box-sizing: border-box;
+        }
+
+        #face-container {
+            width: 360px;
+            height: 280px;
+            position: relative;
+            margin: 20px auto;
+            max-width: 95vw;
+        }
+
+        #face-video {
+            width: 100%;
+            height: 100%;
+        }
+
+        #face-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .chat-container {
+            margin: 20px auto;
+            width: 360px;
+            max-width: 95vw;
+            z-index: 100;
+        }
+        
+        @media (max-width: 400px) {
+            .chat-container {
+                margin: 20px 10px;
+                width: auto;
+            }
+        }
+        
+        .chat-demo-button:hover {
+            background-color: rgba(52, 61, 78, 0.3);
+        }
+        
+        .chat-demo-button:active {
+            background-color: rgba(52, 61, 78, 0.8);
+        }
+        
+        .chatroom h3 {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: #fff;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+            border-bottom: 2px solid #fff;
+        }
+        
+        .chatroom .input input[type=submit] {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: white;
+        }
+        
+        .chatroom #speech-input {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: white;
+        }
+        
+        .chatroom .input input[type=text] {
+            background-color: #1a1a2e;
+            color: #e2e8f0;
+        }
+        
+        .chatroom .chats {
+            box-sizing: border-box;
+            background-color: #1a1a2e;
+        }
+        
+        .chatroom .chats .time.left {
+            color: #94a3b8;
+            float: left;
+        }
+        
+        .chatroom .chats .chat {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            border-radius: 10px;
+            animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform-origin: bottom left;
+        }
+        
+        .chatroom .chats .time.right {
+            color: #94a3b8;
+            float: right;
+        }
+        
+        .chatroom .chats .chat.right {
+            float: right;
+            clear: both;
+            background: linear-gradient(135deg, #ec4899, #f43f5e);
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+            color: white;
+            transform-origin: bottom right;
+        }
+        
+        @keyframes pop-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes retro-blink {
+            0%, 92%, 96%, 100% { opacity: 1; }
+            94%, 98% { opacity: 0; } /* Quick 16-bit double blink */
+        }
+        
+        @keyframes retro-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        @keyframes retro-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        
+        .bot {
+            margin-left: 250px;
+            margin-top: 97px;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 0 8px #a855f7);
+            transition: all 0.3s ease;
+            animation: retro-blink 5s steps(1) infinite, retro-float 3s steps(4) infinite;
+            max-width: 100px;
+            height: auto;
+        }
+        
+        .human {
+            margin-right: 250px;
+            margin-top: 97px;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 0 8px #3b82f6);
+            animation: retro-bounce 4s steps(3) infinite;
+            max-width: 100px;
+            height: auto;
+        }
+        
+        @media (max-width: 400px) {
+            .bot {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .human {
+                display: none;
+            }
+        }
+        /* --------------------------chatbox---------------------------------- */
+    </style>
+</head>
+
+<body>
+
+    <div id="face-container">
+        <video id="face-video" autoplay muted></video>
+        <canvas id="face-canvas"></canvas>
+    </div>
+    <!-- --Chatroom-- -->
+
+    <img id='bot-avatar' class='bot' src="{% static 'img/bot.png' %}" align='left'>
+    <img id='human-avatar' class='human' src="{% static 'img/human.png' %}" align='right'>
+    <div class="chat-container"></div>
+
+    <!-- Cozy 8-bit background music -->
+    <audio id="bg-music" loop>
+        <source src="{% static 'audio/lumi_8bit_theme.mp3' %}" type="audio/mpeg">
+    </audio>
+    <!-- 8-bit message blip sound -->
+    <audio id="msg-sound">
+        <source src="{% static 'audio/lumi_blip.mp3' %}" type="audio/mpeg">
+    </audio>
+
+    <script src="https://npm-scalableminds.s3.eu-central-1.amazonaws.com/@scalableminds/chatroom@master/dist/Chatroom.js" /></script>
+    <script type="text/javascript">
+        // Play background music on first user interaction to comply with browser autoplay policies
+        document.body.addEventListener('click', function() {
+            const bgMusic = document.getElementById('bg-music');
+            if (bgMusic.paused) {
+                bgMusic.volume = 0.15; // Keep it gentle and cozy
+                bgMusic.play().catch(e => console.log("Audio playback failed:", e));
+            }
+        }, { once: true });
+
+        window.chatroom = new window.Chatroom({
+            host: "https://lumi-rasa.onrender.com",
+            title: "Chat with Lumi",
+            container: document.querySelector(".chat-container"),
+            welcomeMessage: "*Beep boop!* Hi, I am Lumi, your cozy companion. How can I pamper you today?",
+            speechRecognition: "en-US",
+            voiceLang: "en-US"
+        });
+        chatroom.openChat();
+
+        // Add message sound effect listener
+        const msgSound = document.getElementById('msg-sound');
+        msgSound.volume = 0.5;
+        
+        const initObserver = new MutationObserver((mutations, obs) => {
+            const chatsEl = document.querySelector('.chats');
+            if (chatsEl) {
+                const messageObserver = new MutationObserver((msgMutations) => {
+                    msgMutations.forEach((mutation) => {
+                        if (mutation.addedNodes.length) {
+                            msgSound.currentTime = 0;
+                            msgSound.play().catch(e => console.log("Sound play prevented", e));
+                        }
+                    });
+                });
+                messageObserver.observe(chatsEl, { childList: true });
+                obs.disconnect();
+            }
+        });
+        initObserver.observe(document.querySelector(".chat-container"), { childList: true, subtree: true });
+
+        const video = document.getElementById('face-video');
+        const canvas = document.getElementById('face-canvas');
+        const displaySize = { width: video.width, height: video.height };
+
+        Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+            faceapi.nets.faceLandmark68Net.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+            faceapi.nets.faceRecognitionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights'),
+            faceapi.nets.faceExpressionNet.loadFromUri('https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights')
+        ]).then(startVideo);
+
+        function startVideo() {
+            navigator.getUserMedia({ video: {} },
+                stream => video.srcObject = stream,
+                err => console.error(err)
+            );
+        }
+
+        video.addEventListener('play', () => {
+            const canvas = faceapi.createCanvasFromMedia(video);
+            document.getElementById('face-container').append(canvas);
+            faceapi.matchDimensions(canvas, displaySize);
+            setInterval(async() => {
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                faceapi.draw.drawDetections(canvas, resizedDetections);
+                faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+                faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+
+                if (detections.length > 0) {
+                    const expressions = detections[0].expressions;
+                    const dominantEmotion = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+                    chatroom.send('/' + dominantEmotion);
+
+                    const botAvatar = document.getElementById('bot-avatar');
+                    if (dominantEmotion === 'happy') {
+                        botAvatar.style.filter = 'drop-shadow(0 0 15px #facc15)';
+                    } else if (dominantEmotion === 'sad') {
+                        botAvatar.style.filter = 'drop-shadow(0 0 15px #38bdf8)';
+                    } else {
+                        botAvatar.style.filter = 'drop-shadow(0 0 8px #a855f7)';
+                    }
+
+                    fetch('/track_mood/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            user_id: '12345', // Replace with a real user ID
+                            emotion: dominantEmotion
+                        })
+                    });
+                }
+            }, 100);
+        });
+        // <!-- --Chatroom-- -->
+    </script>
+</body>
+
+</html>

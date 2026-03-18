@@ -1,0 +1,27 @@
+services:
+  # 1. Rasa Actions Server
+  - type: web
+    name: lumi-actions
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "rasa run actions --port $PORT"
+
+  # 2. Rasa Core Server
+  - type: web
+    name: lumi-rasa
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python -m spacy download en_core_web_sm"
+    startCommand: "rasa run --enable-api --cors \"*\" --port $PORT"
+    envVars:
+      - key: ACTION_ENDPOINT
+        value: https://lumi-actions.onrender.com/webhook
+
+  # 3. Django Web Interface
+  - type: web
+    name: lumi-web
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && pip install gunicorn whitenoise && cd lumi_web && python manage.py collectstatic --noinput"
+    startCommand: "cd lumi_web && gunicorn lumi_web.wsgi:application"
